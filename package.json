@@ -19,6 +19,7 @@
     "mobx": "^6.10.2",
     "mobx-react-lite": "^4.0.5",
     "mysql2": "^3.6.2",
+    "pg": "^8.11.3",
     "react-router-dom": "^6.16.0",
     "sequelize": "^6.33.0"
   },
