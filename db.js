@@ -7,6 +7,7 @@ module.exports = new Sequelize(
     {
         dialect: 'postgresql',
         host: process.env.DB_HOST,
-        dialectOptions: {ssl: true}
+        dialectOptions: {ssl: true},
+        dialectModule: pg
     }
 );
