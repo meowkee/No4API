@@ -12,23 +12,23 @@ const generateJwt = (name, email) => {
 class UserController {
     async registration(req, res, next) {
         const { name, email, password } = req.body;
-        const existingUser = await User.findOne({ where: { email } });
-        if (existingUser) {
+        const salt = bcrypt.genSaltSync(Number(process.env.SALT_ROUNDS));
+        const hashPassword = bcrypt.hashSync(password, salt);
+        try {
+            const user = await User.create({
+                name,
+                email,
+                password: hashPassword,
+                signUpDate: new Date(),
+                status: "Active",
+            });
+            const token = generateJwt(user.name, user.email);
+            return res.json({ token });
+        } catch (error) {
             return next(
                 ApiError.badRequest(`User with ${email} already exists`)
             );
         }
-        const salt = bcrypt.genSaltSync(Number(process.env.SALT_ROUNDS));
-        const hashPassword = bcrypt.hashSync(password, salt);
-        const user = await User.create({
-            name,
-            email,
-            password: hashPassword,
-            signUpDate: new Date(),
-            status: "Active",
-        });
-        const token = generateJwt(user.name, user.email);
-        return res.json({ token });
     }
 
     async login(req, res, next) {
@@ -36,7 +36,9 @@ class UserController {
         const { email, password } = req.body;
         const user = await User.findOne({ where: { email } });
         if (!user || !bcrypt.compareSync(password, user.password)) {
-            return next(ApiError.internal("User not found or password mismatch"));
+            return next(
+                ApiError.internal("User not found or password mismatch")
+            );
         }
         if (user.status === "Blocked") {
             return next(ApiError.internal("User is blocked"));
